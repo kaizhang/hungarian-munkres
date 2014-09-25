@@ -3,7 +3,7 @@
 
 name:                Hungarian-Munkres
 version:             0.1.0
-synopsis:            A linear Sum Assignment Problme (LSAP) solver
+synopsis:            A Linear Sum Assignment Problem (LSAP) solver
 description:         This library provide a Haskell binding to the libhungarian,
                      a solver for Linear Sum Assignment Problem (LSAP) implemented
                      in C language. It uses Hungarian algorithm 
@@ -13,7 +13,7 @@ license:             GPL-3
 license-file:        LICENSE
 author:              Kai Zhang <kai@kzhang.org>
 maintainer:          Kai Zhang <kai@kzhang.org>
-copyright:           Kai Zhang
+copyright:           (c) 2014 Kai Zhang
 category:            Algorithm
 build-type:          Simple
 -- extra-source-files:  
