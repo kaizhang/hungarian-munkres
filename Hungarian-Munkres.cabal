@@ -2,9 +2,13 @@
 -- documentation, see http://haskell.org/cabal/users-guide/
 
 name:                Hungarian-Munkres
-version:             0.1.0.0
--- synopsis:            
--- description:         
+version:             0.1.0
+synopsis:            A linear Sum Assignment Problme (LSAP) solver
+description:         This library provide a Haskell binding to the libhungarian,
+                     a solver for Linear Sum Assignment Problem (LSAP) implemented
+                     in C language. It uses Hungarian algorithm 
+                     <http://en.wikipedia.org/wiki/Hungarian_algorithm>, and runs 
+                     in O(n^3) time.
 license:             GPL-3
 license-file:        LICENSE
 author:              Kai Zhang <kai@kzhang.org>
@@ -36,4 +40,4 @@ test-suite             tests
     , Munkres
     , tasty
     , tasty-quickcheck
-    , ieee754
+    , random

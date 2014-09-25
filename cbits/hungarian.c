@@ -85,7 +85,7 @@ int hungarian_init(hungarian_problem_t* p, double* cost_matrix, int rows, int co
       p->assignment[i][j] = 0;
 
       if (max_cost < p->cost[i][j])
-	max_cost = p->cost[i][j];
+        max_cost = p->cost[i][j];
     }
   }
 
