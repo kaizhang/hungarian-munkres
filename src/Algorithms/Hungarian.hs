@@ -14,7 +14,11 @@ import System.IO.Unsafe
 foreign import ccall "hungarian"
     c_hungarian :: Ptr CDouble -> Ptr CInt -> CInt -> CInt -> IO Double
 
-hungarian :: [Double] -> Int -> Int -> ([(Int, Int)], Double)
+-- | solve the LSAP by hungarian algorithm, return assignment and score
+hungarian :: [Double]               -- ^ row majored flat matrix
+          -> Int                    -- ^ number of rows
+          -> Int                    -- ^ number of columns
+          -> ([(Int, Int)], Double)
 hungarian costMatrix nrows ncols = unsafePerformIO $ do
     withArray (map realToFrac costMatrix) $ \input -> 
         allocaArray (nrows * ncols) $ \output -> do
@@ -28,6 +32,7 @@ hungarian costMatrix nrows ncols = unsafePerformIO $ do
                       | otherwise = (i+1, (i `div` ncols, i `mod` ncols) : assign)
 {-# INLINE hungarian #-}
 
+-- | solve the LSAP by hungarian algorithm, return score only
 hungarianScore :: [Double] -> Int -> Int -> Double
 hungarianScore costMatrix nrows = snd . hungarian costMatrix nrows
 {-# INLINE hungarianScore #-}

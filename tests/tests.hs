@@ -1,7 +1,6 @@
 import Algorithms.Hungarian
 import Data.Algorithm.Munkres
 import Data.Array.Unboxed
-import Numeric.IEEE
 import Test.Tasty
 import Test.Tasty.QuickCheck
 import System.Random

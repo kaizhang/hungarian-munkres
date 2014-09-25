@@ -41,3 +41,7 @@ test-suite             tests
     , tasty
     , tasty-quickcheck
     , random
+
+source-repository  head
+  type: git
+  location: https://github.com/kaizhang/hungarian-munkres.git
