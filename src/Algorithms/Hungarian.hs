@@ -10,15 +10,12 @@ import Foreign.Marshal.Array
 import System.IO.Unsafe
 
 foreign import ccall "hungarian"
-    c_hungarian :: Ptr CDouble -> Ptr CInt -> CInt -> CInt -> IO CInt
+    c_hungarian :: Ptr CDouble -> Ptr CInt -> CInt -> CInt -> IO Double
 
-hungarian :: [[Int]] -> [Int]
-hungarian costMatrix = unsafePerformIO $ do 
-    input <- newArray . concat . (map . map) fromIntegral $ costMatrix
-    output <- mallocArray (nrows * ncols)
-    e <- c_hungarian input output (fromIntegral nrows) (fromIntegral ncols)
-    results <- peekArray (nrows * ncols) output
-    return $ map fromIntegral results
-  where
-    nrows = length costMatrix
-    ncols = length . head $ costMatrix
+hungarian :: [Double] -> Int -> Int -> Double
+hungarian costMatrix nrows ncols = unsafePerformIO $ do
+    withArray (map realToFrac costMatrix) $ \input -> 
+        allocaArray (nrows * ncols) $ \output -> do
+            cost <- c_hungarian input output (fromIntegral nrows) (fromIntegral ncols)
+--    results <- peekArray (nrows * ncols) output
+            return $ realToFrac cost

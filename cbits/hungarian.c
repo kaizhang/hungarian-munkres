@@ -28,29 +28,15 @@
 #include <stdlib.h>
 #include "hungarian.h"
 
-#define INF (0x7FFFFFFF)
+#define INF (1.0/0.0)
 #define verbose (0)
 
 #define hungarian_test_alloc(X) do {if ((void *)(X) == NULL) fprintf(stderr, "Out of memory in %s, (%s, line %d).\n", __FUNCTION__, __FILE__, __LINE__); } while (0)
 
-int** array_to_matrix(int* m, int rows, int cols) {
-  int i,j;
-  int** r;
-  r = (int**)calloc(rows,sizeof(int*));
-  for(i=0;i<rows;i++)
-  {
-    r[i] = (int*)calloc(cols,sizeof(int));
-    for(j=0;j<cols;j++)
-      r[i][j] = m[i*cols+j];
-  }
-  return r;
-}
-
-int hungarian(int* data, int* result, int rows, int cols) {
+int hungarian(double* data, int* result, int rows, int cols) {
   int i,j;
   hungarian_problem_t p;
-  int** m = array_to_matrix(data, rows, cols);
-  int matrix_size = hungarian_init(&p, m , rows, cols, HUNGARIAN_MODE_MINIMIZE_COST) ;
+  int matrix_size = hungarian_init(&p, data , rows, cols, HUNGARIAN_MODE_MINIMIZE_COST) ;
   hungarian_solve(&p);
 
   for(i=0;i<rows;i++)
@@ -58,7 +44,6 @@ int hungarian(int* data, int* result, int rows, int cols) {
           result[i*cols+j] = p.assignment[i][j];
 
   hungarian_free(&p);
-  free(m);
 
   return 0;
 }
@@ -68,10 +53,10 @@ int hungarian_imax(int a, int b) {
   return (a<b)?b:a;
 }
 
-int hungarian_init(hungarian_problem_t* p, int** cost_matrix, int rows, int cols, int mode) {
+int hungarian_init(hungarian_problem_t* p, double* cost_matrix, int rows, int cols, int mode) {
 
   int i,j, org_cols, org_rows;
-  int max_cost;
+  double max_cost;
   max_cost = 0;
   
   org_cols = cols;
@@ -85,18 +70,18 @@ int hungarian_init(hungarian_problem_t* p, int** cost_matrix, int rows, int cols
   p->num_rows = rows;
   p->num_cols = cols;
 
-  p->cost = (int**)calloc(rows,sizeof(int*));
+  p->cost = (double**)calloc(rows,sizeof(double*));
   hungarian_test_alloc(p->cost);
   p->assignment = (int**)calloc(rows,sizeof(int*));
   hungarian_test_alloc(p->assignment);
 
   for(i=0; i<p->num_rows; i++) {
-    p->cost[i] = (int*)calloc(cols,sizeof(int));
+    p->cost[i] = (double*)calloc(cols,sizeof(double));
     hungarian_test_alloc(p->cost[i]);
     p->assignment[i] = (int*)calloc(cols,sizeof(int));
     hungarian_test_alloc(p->assignment[i]);
     for(j=0; j<p->num_cols; j++) {
-      p->cost[i][j] =  (i < org_rows && j < org_cols) ? cost_matrix[i][j] : 0;
+      p->cost[i][j] =  (i < org_rows && j < org_cols) ? cost_matrix[i*org_cols+j] : 0;
       p->assignment[i][j] = 0;
 
       if (max_cost < p->cost[i][j])
@@ -136,16 +121,17 @@ void hungarian_free(hungarian_problem_t* p) {
 
 
 
-void hungarian_solve(hungarian_problem_t* p)
+double hungarian_solve(hungarian_problem_t* p)
 {
-  int i, j, m, n, k, l, s, t, q, unmatched, cost;
+  int i, j, m, n, k, l, t, q, unmatched;
+  double s, cost;
   int* col_mate;
   int* row_mate;
   int* parent_row;
   int* unchosen_row;
-  int* row_dec;
-  int* col_inc;
-  int* slack;
+  double* row_dec;
+  double* col_inc;
+  double* slack;
   int* slack_row;
 
   cost=0;
@@ -156,7 +142,7 @@ void hungarian_solve(hungarian_problem_t* p)
   hungarian_test_alloc(col_mate);
   unchosen_row = (int*)calloc(p->num_rows,sizeof(int));
   hungarian_test_alloc(unchosen_row);
-  row_dec  = (int*)calloc(p->num_rows,sizeof(int));
+  row_dec  = (double*)calloc(p->num_rows,sizeof(double));
   hungarian_test_alloc(row_dec);
   slack_row  = (int*)calloc(p->num_rows,sizeof(int));
   hungarian_test_alloc(slack_row);
@@ -165,9 +151,9 @@ void hungarian_solve(hungarian_problem_t* p)
   hungarian_test_alloc(row_mate);
   parent_row = (int*)calloc(p->num_cols,sizeof(int));
   hungarian_test_alloc(parent_row);
-  col_inc = (int*)calloc(p->num_cols,sizeof(int));
+  col_inc = (double*)calloc(p->num_cols,sizeof(double));
   hungarian_test_alloc(col_inc);
-  slack = (int*)calloc(p->num_cols,sizeof(int));
+  slack = (double*)calloc(p->num_cols,sizeof(double));
   hungarian_test_alloc(slack);
 
   for (i=0;i<p->num_rows;i++) {
@@ -190,17 +176,16 @@ void hungarian_solve(hungarian_problem_t* p)
   // Begin subtract column minima in order to start with lots of zeroes 12
   if (verbose)
     fprintf(stderr, "Using heuristic\n");
-  for (l=0;l<n;l++)
-    {
-      s=p->cost[0][l];
-      for (k=1;k<m;k++) 
-	if (p->cost[k][l]<s)
-	  s=p->cost[k][l];
-      cost+=s;
-      if (s!=0)
-	for (k=0;k<m;k++)
-	  p->cost[k][l]-=s;
-    }
+  for (l=0;l<n;l++) {
+    s=p->cost[0][l];
+    for (k=1;k<m;k++) 
+      if (p->cost[k][l]<s)
+        s=p->cost[k][l];
+    cost+=s;
+    if (s!=0)
+      for (k=0;k<m;k++)
+        p->cost[k][l]-=s;
+  }
   // End subtract column minima in order to start with lots of zeroes 12
 
   // Begin initial state 16
@@ -257,7 +242,7 @@ void hungarian_solve(hungarian_problem_t* p)
 		for (l=0;l<n;l++)
 		  if (slack[l])
 		    {
-		      int del;
+		      double del;
 		      del=p->cost[k][l]-s+col_inc[l];
 		      if (del<slack[l])
 			{
@@ -301,7 +286,7 @@ void hungarian_solve(hungarian_problem_t* p)
 		    k=slack_row[l];
 		    if (verbose)
 		      fprintf(stderr, 
-			     "Decreasing uncovered elements by %d produces zero at [%d,%d]\n",
+			     "Decreasing uncovered elements by %f produces zero at [%d,%d]\n",
 			     s,k,l);
 		    if (row_mate[l]<0)
 		      {
@@ -340,9 +325,9 @@ void hungarian_solve(hungarian_problem_t* p)
 	  k=parent_row[j];
 	  l=j;
 	}
-      // End update the matching 20
-      if (--unmatched==0)
-	goto done;
+  // End update the matching 20
+  if (--unmatched==0) 
+    goto done;
       // Begin get ready for another stage 17
       t=0;
       for (l=0;l<n;l++)
@@ -361,6 +346,7 @@ void hungarian_solve(hungarian_problem_t* p)
     }
  done:
 
+  /*
   // Begin doublecheck the solution 23
   for (k=0;k<m;k++)
     for (l=0;l<n;l++)
@@ -380,27 +366,28 @@ void hungarian_solve(hungarian_problem_t* p)
     exit(0);
   // End doublecheck the solution 23
   // End Hungarian algorithm 18
+  // */
 
   for (i=0;i<m;++i)
     {
       p->assignment[i][col_mate[i]]=HUNGARIAN_ASSIGNED;
-      /*TRACE("%d - %d\n", i, col_mate[i]);*/
+      //TRACE("%d - %d\n", i, col_mate[i]);
     }
   for (k=0;k<m;++k)
     {
       for (l=0;l<n;++l)
 	{
-	  /*TRACE("%d ",p->cost[k][l]-row_dec[k]+col_inc[l]);*/
+	  //TRACE("%d ",p->cost[k][l]-row_dec[k]+col_inc[l]);
 	  p->cost[k][l]=p->cost[k][l]-row_dec[k]+col_inc[l];
 	}
-      /*TRACE("\n");*/
+      //TRACE("\n");
     }
   for (i=0;i<m;i++)
     cost+=row_dec[i];
   for (i=0;i<n;i++)
     cost-=col_inc[i];
   if (verbose)
-    fprintf(stderr, "Cost is %d\n",cost);
+    fprintf(stderr, "Cost is %f\n",cost);
 
 
   free(slack);
@@ -411,4 +398,5 @@ void hungarian_solve(hungarian_problem_t* p)
   free(row_dec);
   free(unchosen_row);
   free(col_mate);
+  return cost;
 }

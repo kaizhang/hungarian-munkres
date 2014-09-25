@@ -40,17 +40,17 @@ extern "C" {
 typedef struct {
   int num_rows;
   int num_cols;
-  int** cost;
+  double** cost;
   int** assignment;  
 } hungarian_problem_t;
 
-int hungarian(int* data, int* result, int rows, int cols);
+int hungarian(double* data, int* result, int rows, int cols);
 
 /** This method initialize the hungarian_problem structure and init 
  *  the  cost matrices (missing lines or columns are filled with 0).
  *  It returns the size of the quadratic(!) assignment matrix. **/
 int hungarian_init(hungarian_problem_t* p, 
-		   int** cost_matrix, 
+		   double* cost_matrix, 
 		   int rows, 
 		   int cols, 
 		   int mode);
@@ -59,7 +59,7 @@ int hungarian_init(hungarian_problem_t* p,
 void hungarian_free(hungarian_problem_t* p);
 
 /** This method computes the optimal assignment. **/
-void hungarian_solve(hungarian_problem_t* p);
+double hungarian_solve(hungarian_problem_t* p);
 
 #ifdef __cplusplus
 }
