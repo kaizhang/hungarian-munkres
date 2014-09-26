@@ -44,7 +44,7 @@ typedef struct {
   int** assignment;  
 } hungarian_problem_t;
 
-int hungarian(double* data, int* result, int rows, int cols);
+double hungarian(double* data, int* result, int rows, int cols);
 
 /** This method initialize the hungarian_problem structure and init 
  *  the  cost matrices (missing lines or columns are filled with 0).

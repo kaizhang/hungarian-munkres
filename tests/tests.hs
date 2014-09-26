@@ -22,4 +22,4 @@ randMat g = (take (rows * cols) $ randoms g, rows, cols)
     [rows, cols] = take 2 $ randomRs (100, 150) g
 
 (~=) :: Double -> Double -> Bool
-(~=) a b = abs (a - b) < 1e-12
+(~=) a b = abs (a - b) <= 1.0e-12
