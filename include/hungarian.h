@@ -36,6 +36,7 @@ extern "C" {
 #define HUNGARIAN_MODE_MINIMIZE_COST   0
 #define HUNGARIAN_MODE_MAXIMIZE_UTIL 1
 
+#include <stdlib.h>
 
 typedef struct {
   int num_rows;
@@ -44,7 +45,7 @@ typedef struct {
   int** assignment;  
 } hungarian_problem_t;
 
-double hungarian(double* data, int* result, int rows, int cols);
+double hungarian(double* data, int rows, int cols, size_t *from, size_t *to);
 
 /** This method initialize the hungarian_problem structure and init 
  *  the  cost matrices (missing lines or columns are filled with 0).

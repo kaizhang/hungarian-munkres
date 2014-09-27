@@ -33,23 +33,32 @@
 
 #define hungarian_test_alloc(X) do {if ((void *)(X) == NULL) fprintf(stderr, "Out of memory in %s, (%s, line %d).\n", __FUNCTION__, __FILE__, __LINE__); } while (0)
 
-double hungarian(double* data, int* result, int rows, int cols) {
-  int i,j;
+double hungarian(double* data, int rows, int cols, size_t *from, size_t *to) {
+  size_t i, j, k, n;
   hungarian_problem_t p;
   int matrix_size = hungarian_init(&p, data , rows, cols, HUNGARIAN_MODE_MINIMIZE_COST) ;
   double cost = hungarian_solve(&p);
 
-  for(i=0;i<rows;i++)
-      for(j=0;j<cols;j++)
-          result[i*cols+j] = p.assignment[i][j];
+  n = (rows < cols) ? rows : cols;
+  k = 0;
+  if (from != NULL && to != NULL) {
+    for(i=0;i<rows;i++) {
+      for(j=0;j<cols;j++) {
+        if (k < n && p.assignment[i][j] == HUNGARIAN_ASSIGNED) {
+          from[k] = i;
+          to[k] = j;
+          k++;
+        }
+      }
+    }
+  }
 
   hungarian_free(&p);
 
   return cost;
 }
 
-
-int hungarian_imax(int a, int b) {
+inline int hungarian_imax(int a, int b) {
   return (a<b)?b:a;
 }
 
