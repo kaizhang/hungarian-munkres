@@ -5,7 +5,7 @@ import Data.Array.Unboxed
 import System.Random
 
 sample :: [Double]
-sample = take 4000 $ randomRs (-100, 100) (mkStdGen 4)
+sample = take 2000 $ randomRs (-100, 100) (mkStdGen 4)
 
 sample' :: [Double]
 sample' = take 40000 $ randomRs (-1000, 1000) (mkStdGen 24)
